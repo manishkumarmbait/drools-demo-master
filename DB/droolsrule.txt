@@ -1,0 +1,38 @@
+package com.drools.examples
+
+import com.driot.service.CustomerData;
+
+declare RechargeDto
+    name : String
+    connectionType : String
+    mobileNo : String
+    rechargeAmount : Double
+    discount : Integer
+	noOfYearCustomer : Integer
+    payableAmount: Double
+end
+
+rule "Set payable amount same as total amount"
+	when 
+		rechargeDto: RechargeDto( mobileNo != null)
+	then
+		rechargeDto.setPayableAmount(rechargeDto.getRechargeAmount());				
+		rechargeDto.setNoOfYearCustomer(new com.driot.service.CustomerData().getCustomerTenure(rechargeDto.getMobileNo()));				
+end
+
+rule "Offer for Postpaid"
+	when 
+		rechargeDto: RechargeDto(connectionType == 1)
+	then
+		rechargeDto.setDiscount(10);
+		rechargeDto.setDiscount(rechargeDto.getDiscount()+rechargeDto.getNoOfYearCustomer());
+		rechargeDto.setPayableAmount(rechargeDto.getRechargeAmount() - ((rechargeDto.getRechargeAmount()/100)*rechargeDto.getDiscount()));
+end
+
+rule "Offer for Prepaid"
+	when 
+		rechargeDto: RechargeDto(connectionType == 2)
+	then
+		rechargeDto.setDiscount(5);
+		rechargeDto.setPayableAmount(rechargeDto.getRechargeAmount() - ((rechargeDto.getRechargeAmount()/100)*rechargeDto.getDiscount()));
+end
